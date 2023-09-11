@@ -1,0 +1,9 @@
+.env
+node_modules/
+package-lock.json
+.idea/
+.DS_Store
+thumbs.db
+desktop.ini
+coverage/
+vscode/
