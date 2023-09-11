@@ -18,6 +18,6 @@ router.all("*", (req, res) => {
 });
 
 router.get("/", home.index);
-router.post("/", home.create)
+router.post("/", home.create);
 
 module.exports = router;
