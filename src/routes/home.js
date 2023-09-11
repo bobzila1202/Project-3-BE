@@ -17,5 +17,7 @@ router.all("*", (req, res) => {
     res.status(404).json({error: "Not implemented yet."});
 });
 
+router.get("/", home.index);
+router.post("/", home.create)
 
 module.exports = router;
