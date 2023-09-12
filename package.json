@@ -7,7 +7,7 @@
     "start": "node src/index.js",
     "test": "jest --clearCache && jest --coverage",
     "dev": "nodemon index.js",
-    "setup_db": "echo $(docker run -d -p 27017:27017 --name space_dungeons -e MONGO_INITDB_DATABASE=space_db mongo) > /dev/null",
+    "setup_db": "docker run -d -p 27017:27017 --name space_dungeons -e MONGO_INITDB_DATABASE=space_db mongo",
     "mongosh": "echo $(docker exec -it space_dungeons bash -c 'mongosh space_db') > /dev/null",
     "clean_db": "echo $(docker stop space_dungeons && docker rm space_dungeons) > /dev/null"
   },
@@ -15,7 +15,10 @@
   "license": "ISC",
   "devDependencies": {
     "@types/mongoose": "^5.11.97",
-    "nodemon": "^3.0.1"
+    "dotenv": "^16.3.1",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
   },
   "dependencies": {
     "mongodb": "^6.0.0",
