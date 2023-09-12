@@ -21,6 +21,7 @@
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.11.3",
+    "pm2": "^5.3.0",
     "python-shell": "^5.0.0",
     "uuid": "^9.0.0"
   },

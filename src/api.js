@@ -42,13 +42,19 @@ app.use(filter);
 
 // app.use("/code", code)
 
-app.post("/python", (req, res) => {
+//ARGS NEED TO LITERALLY MATCH UP
+
+app.post("/python", async (req, res) => {
     fs.writeFileSync('test.py', req.body.code)
-    PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:[1,2,3]}).then(
+
+
+    PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:['hello','olleh']}).then(
         messages => {console.log('line 48 ' + messages);
         res.send(messages);
         }
     )
+
+
 
     // PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:[1,2,3]}, function (err, results){
     //     console.log('Hello World');
