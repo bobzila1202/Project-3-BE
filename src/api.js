@@ -1,7 +1,11 @@
-    const express = require("express");
+const {PythonShell} = require("python-shell")
+ 
+const express = require("express");
 // const cron = require('node-cron');
 const ENV = process.env.ENV;
 const app = express();
+
+const fs = require('fs')
 const cors = require('cors')
 const logger = require('morgan')
 
@@ -38,9 +42,21 @@ app.use(filter);
 
 // app.use("/code", code)
 
-app.post("/code", (req, res) => {
-    console.log(req.body);
-    res.json({message: 'success'})
+app.post("/python", (req, res) => {
+    fs.writeFileSync('test.py', req.body.code)
+    PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:[1,2,3]}).then(
+        messages => {console.log(messages);
+        res.send(messages);
+        }
+    )
+
+    // PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:[1,2,3]}, function (err, results){
+    //     console.log('Hello World');
+    //     console.log('WORKING')
+    //     if (err) throw err;
+    //     console.log('line 57' + results);
+    //     res.send({passOrFail: results[0]})
+    //   })
 })
 
 // TODO: facebook & google oath2 mappings
