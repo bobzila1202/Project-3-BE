@@ -1,4 +1,4 @@
-    const express = require("express");
+const express = require("express");
 // const cron = require('node-cron');
 const ENV = process.env.ENV;
 const app = express();
@@ -8,7 +8,7 @@ const filter = require("./middleware/htmlFilter");
 const jsonCheck = require("./middleware/corruptJsonCheck");
 
 
-// const users = require("./routes/users");
+const user = require("./routes/user");
 // const admins = require("./routes/admins");
 const home = require("./routes/home");
 
@@ -26,7 +26,7 @@ app.use(jsonCheck)
 app.use(filter);
 
 // routes mapping
-// app.use("/users", users);
+app.use("/users", user);
 // app.use("/admins", admins);
 
 // TODO: facebook & google oath2 mappings
@@ -54,5 +54,9 @@ if (ENV === "production") {
     const hardenedSecurityConfig = require("./middleware/hardenedServer");
     module.exports = hardenedSecurityConfig(app);
 } else {
+    const populate_db = require("./db/data/populate_db");
+    const dropCollections = require("./db/dropCollections");
+
+    dropCollections().then(() => populate_db().then());
     module.exports = app;
 }

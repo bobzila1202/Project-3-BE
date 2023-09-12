@@ -2,11 +2,10 @@ const { Router } = require('express');
 
 // Placeholder for a Game route, TODO: refactor
 
-const game = require('../controllers/game');
+const user = require('../controllers/user');
 
 const router = Router();
 
-//router.get("/", game.index);
-
+router.get("/", user.getAll);
 
 module.exports = router;
