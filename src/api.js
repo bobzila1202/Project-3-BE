@@ -38,8 +38,9 @@ app.use(filter);
 
 // app.use("/code", code)
 
-app.get("/code", (req, res) => {
-    res.send('Hello World');
+app.post("/code", (req, res) => {
+    console.log(req.body);
+    res.json({message: 'success'})
 })
 
 // TODO: facebook & google oath2 mappings
