@@ -45,7 +45,7 @@ app.use(filter);
 app.post("/python", (req, res) => {
     fs.writeFileSync('test.py', req.body.code)
     PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:[1,2,3]}).then(
-        messages => {console.log(messages);
+        messages => {console.log('line 48 ' + messages);
         res.send(messages);
         }
     )
