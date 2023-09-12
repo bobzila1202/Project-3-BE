@@ -2,6 +2,8 @@
 // const cron = require('node-cron');
 const ENV = process.env.ENV;
 const app = express();
+const cors = require('cors')
+const logger = require('morgan')
 
 // const db = require("./db/db");
 const filter = require("./middleware/htmlFilter");
@@ -11,6 +13,7 @@ const jsonCheck = require("./middleware/corruptJsonCheck");
 // const users = require("./routes/users");
 // const admins = require("./routes/admins");
 const home = require("./routes/home");
+const code = require("./routes/code")
 
 
 // parse as json
@@ -18,6 +21,10 @@ app.use(express.json());
 
 // set static files
 app.use(express.static("static"));
+
+app.use(logger('dev'))
+
+app.use(cors())
 
 // check for invalid json
 app.use(jsonCheck)
@@ -28,6 +35,12 @@ app.use(filter);
 // routes mapping
 // app.use("/users", users);
 // app.use("/admins", admins);
+
+// app.use("/code", code)
+
+app.get("/code", (req, res) => {
+    res.send('Hello World');
+})
 
 // TODO: facebook & google oath2 mappings
 // app.use("/", require("./routes/google"));
