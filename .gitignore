@@ -7,3 +7,4 @@ thumbs.db
 desktop.ini
 coverage/
 vscode/
+/src/certificates/

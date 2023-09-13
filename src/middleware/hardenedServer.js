@@ -3,16 +3,15 @@ const fs = require("fs");
 const cors = require("cors");
 const helmet = require("helmet");
 
-// TODO: grab the actual server domain address
-
 module.exports = (app) => {
-    const privateKey = fs.readFileSync("security/certificates/private_key.pem", "utf8");
-    const certificate = fs.readFileSync("security/certificates/certificate.pem", "utf8");
+    const privateKey = fs.readFileSync("certificates/private_key.pem", "utf8");
+    const certificate = fs.readFileSync("certificates/certificate.pem", "utf8");
 
     const credentials = {key: privateKey, cert: certificate};
 
     app.use(
         cors({
+            // TODO: change this to the actual frontend url
             origin: "localhost",
             methods: "GET,POST",
             allowedHeaders: ["Authorization", "Content-Type"],
@@ -50,7 +49,7 @@ module.exports = (app) => {
     );
     // Prevents browsers from performing DNS prefetching on backend's links
     app.use(helmet.dnsPrefetchControl());
-    //
+    // Prevents clickjacking
     app.use(
         helmet.permittedCrossDomainPolicies({
             permittedPolicies: "none",

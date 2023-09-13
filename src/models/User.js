@@ -52,7 +52,7 @@ class User {
 
     static async getByUsername(username) {
         await client.connect();
-        console.log()
+
         const response = await users_db
             .findOne({username: username});
 
@@ -82,6 +82,7 @@ class User {
         );
     }
 
+    // probably backlogged
     async updateBasicDetails() {
         await client.connect();
 
