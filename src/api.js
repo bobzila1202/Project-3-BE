@@ -54,9 +54,9 @@ if (ENV === "production") {
     const hardenedSecurityConfig = require("./middleware/hardenedServer");
     module.exports = hardenedSecurityConfig(app);
 } else {
-    const populate_db = require("./db/data/populate_db");
-    const dropCollections = require("./db/dropCollections");
-
-    dropCollections().then(() => populate_db().then());
+    // const populate_db = require("./db/data/populate_db");
+    // const dropCollections = require("./db/dropCollections");
+    //
+    // dropCollections().then(() => populate_db().then());
     module.exports = app;
 }

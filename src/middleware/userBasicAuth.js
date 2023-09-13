@@ -1,7 +1,6 @@
 const Token = require("../models/Token");
 const User = require("../models/User");
 
-// TODO: fix this
 async function authenticator(req, res, next) {
     try {
         const extractedToken = req.headers.cookie.split("=")[1];
@@ -9,7 +8,7 @@ async function authenticator(req, res, next) {
         if (extractedToken.length === 0) {
             throw new Error("Empty Token");
         } else {
-            const validToken = await Token.getOneByToken(extractedToken);
+            const validToken = await Token.getByToken(extractedToken);
 
             // check user activated
             const user = await User.getByUsername(validToken.account_username);
@@ -28,7 +27,7 @@ async function authenticator(req, res, next) {
             next();
         }
     } catch (err) {
-        res.redirect("/");
+        res.status(403).json({error: "Unauthorized"});
     }
 }
 

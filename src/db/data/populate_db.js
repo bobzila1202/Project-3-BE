@@ -55,6 +55,9 @@ const runDataInsertion = async () => {
         token1 = {
             account_username: 'bob',
             token: 'bob_token',
+            created_at: new Date(),
+            // its always 30 minutes from now, as reflected in cookie session
+            expires_at: new Date(Date.now() + 30 * 60 * 1000),
         };
 
         // Insert data into collections

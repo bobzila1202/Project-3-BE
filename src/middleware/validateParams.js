@@ -5,7 +5,6 @@ const intRegex = /^[0-9]+$/;
 const validateParameters = (parameterTypes) => {
     return (req, res, next) => {
         const bodyParameters = req.body;
-        console.log(req.body.image)
 
         try {
             for (const paramName in parameterTypes) {
