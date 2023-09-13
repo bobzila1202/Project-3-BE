@@ -1,4 +1,4 @@
-const {PythonShell} = require("python-shell")
+const {PythonShell, PythonShellError} = require("python-shell")
  
 const express = require("express");
 // const cron = require('node-cron');
@@ -17,7 +17,8 @@ const jsonCheck = require("./middleware/corruptJsonCheck");
 // const users = require("./routes/users");
 // const admins = require("./routes/admins");
 const home = require("./routes/home");
-const code = require("./routes/code")
+const code = require("./routes/code");
+const { error, log } = require("console");
 
 
 // parse as json
@@ -44,8 +45,16 @@ app.use(filter);
 
 //ARGS NEED TO LITERALLY MATCH UP
 
+const test = `if __name__ == "__main__":
+ a = str(sys.argv[1])
+ result = str(sys.argv[2])
+ print(reverse(a) == result)`
+
+
 app.post("/python", async (req, res) => {
-    fs.writeFileSync('test.py', req.body.code)
+    const input = 'import sys; \n' + req.body.code + '\n' + test 
+    console.log(input);
+    fs.writeFileSync('test.py', input)
 
 
     PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:['hello','olleh']}).then(
@@ -55,14 +64,6 @@ app.post("/python", async (req, res) => {
     )
 
 
-
-    // PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:[1,2,3]}, function (err, results){
-    //     console.log('Hello World');
-    //     console.log('WORKING')
-    //     if (err) throw err;
-    //     console.log('line 57' + results);
-    //     res.send({passOrFail: results[0]})
-    //   })
 })
 
 // TODO: facebook & google oath2 mappings
