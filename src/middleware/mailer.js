@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    host: 'localhost', port: 1025, ignoreTLS: true,
+    host: process.env.EMAIL_URL, port: 1025, ignoreTLS: true,
 });
 
 module.exports = async function sendActivationEmail(to, text, email, action) {

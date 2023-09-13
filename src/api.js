@@ -1,5 +1,5 @@
 const express = require("express");
-// const cron = require('node-cron');
+const cron = require('node-cron');
 const ENV = process.env.ENV;
 const app = express();
 
@@ -29,9 +29,8 @@ app.use(filter);
 app.use("/users", user);
 // app.use("/admins", admins);
 
-// TODO: facebook & google oath2 mappings
-// app.use("/", require("./routes/google"));
-// app.use("/", require("./routes/facebook"));
+app.use("/", require("./middleware/googleOauth"));
+app.use("/", require("./middleware/facebookOauth"));
 
 
 // should always be last
@@ -40,15 +39,18 @@ app.use("/", home);
 /* istanbul ignore next */
 if (ENV === "production") {
     // Schedule the token delete task to run every 1 minute
-    // cron.schedule('*/30 * * * *', () => {
-    //     // delete expired session tokens
-    //     db.query("SELECT delete_expired_session_tokens();")
-    //         .then(() => console.log("Expired tokens deleted."));
-    //
-    //     // delete expired email tokens
-    //     db.query("SELECT delete_expired_email_tokens();")
-    //         .then(() => console.log("Expired email tokens deleted."));
-    // });
+    const client = require("./db");
+    // delete expired tokens in token collection
+    client.connect()
+        .then(db => {
+            // delete every 30 minutes
+            cron.schedule('*/30 * * * *', () => {
+                db.collection('Token').deleteMany({expires_at: {$lte: new Date()}});
+            });
+
+        })
+        .catch(err => console.log(err.message));
+
 
     // apply various security patches
     const hardenedSecurityConfig = require("./middleware/hardenedServer");

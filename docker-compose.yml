@@ -1,0 +1,60 @@
+version: "3"
+
+services:
+  #Persistent database
+  mongo:
+    container_name: mongo_db
+    image: mongo
+    restart: always
+    volumes:
+        - mongo-data:/data/db
+    environment:
+        MONGO_INITDB_DATABASE: space_dungeons
+    networks:
+      mongo_net:
+        ipv4_address: 172.20.1.4
+
+
+  mail_dev:
+    container_name: mail_dev
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    networks:
+      mongo_net:
+        ipv4_address: 172.20.1.10
+
+  backend:
+    container_name: backend-server
+    ports:
+      - "443:443"
+    environment:
+      PORT: 443
+      DB_URL: "mongodb://172.20.1.4:27017/space_dungeons"
+      ENV: production
+      BCRYPT_SALT_ROUNDS: 12
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FACEBOOK_APP_ID: ${FACEBOOK_APP_ID}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+      EMAIL_URL: 172.20.1.10
+    command: bash -c 'while !</dev/tcp/mongo/27017; do sleep 1; done; npm run start'
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      mongo_net:
+        ipv4_address: 172.20.1.6
+
+networks:
+  mongo_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.1.0/24
+
+volumes:
+  mongo-data:
