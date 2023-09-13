@@ -8,66 +8,74 @@ const hashPassword = async (password) => {
 };
 
 const runDataInsertion = async () => {
-    let admin1, admin2, member1, member2, emailVerify1, token1;
+    let admin1, admin2, member1, member2, emailVerify1, token1, bob_leaderboard;
 
-    try {
-        await client.connect();
-        console.log('Connected to MongoDB');
+    await client.connect();
+    console.log('Connected to MongoDB');
 
-        // Initialize data
-        admin1 = {
-            username: 'admin',
-            password: await hashPassword('$2b$12$SFKfbItlBxCaYp/OnMI/iOdC5AgJbuLC/fK0s2Dfr.CgyzwGLmMwy'),
-        };
+    // Initialize data
+    admin1 = {
+        username: 'admin',
+        password: await hashPassword('admin'),
+    };
 
-        admin2 = {
-            username: 'linux',
-            password: await hashPassword('$2b$12$A6wVaa5Hs09Ab3YKWTsqiObvXPCLTNebhOCGuFOLLaR4ngwoqAZDq'),
-        };
+    admin2 = {
+        username: 'linux',
+        password: await hashPassword('linux'),
+    };
 
-        member1 = {
-            username: 'bob',
-            password: await hashPassword('$2b$12$edxyaKda4of6CrWzZ28m5eEel3PFXFWbfgxhARZpB7ELwjPNEq2Ca'),
-            email: 'bob@bob.com',
-            first_name: 'Bob',
-            last_name: 'Bobson',
-            phone_number: '+32145678',
-            postal_code: 'NYC ITY',
-            is_activated: true,
-        };
+    member1 = {
+        username: 'bob',
+        password: await hashPassword('bob'),
+        email: 'bob@bob.com',
+        first_name: 'Bob',
+        last_name: 'Bobson',
+        phone_number: '+32145678',
+        postal_code: 'NYC ITY',
+        is_activated: true,
+    };
 
-        member2 = {
-            username: 'jane',
-            password: await hashPassword('$2b$12$3ZoSaOHW68Hpz7Pj4mf/h.nwp6e7uw5gE6.wUDknM/QrX1tt2Mb5y'),
-            email: 'jane@jane.com',
-            first_name: 'Jane',
-            last_name: 'Janerson',
-            phone_number: '+1235678',
-            postal_code: 'NEW ICE',
-            is_activated: false,
-        };
+    member2 = {
+        username: 'jane',
+        password: await hashPassword("jane"),
+        email: 'jane@jane.com',
+        first_name: 'Jane',
+        last_name: 'Janerson',
+        phone_number: '+1235678',
+        postal_code: 'NEW ICE',
+        is_activated: false,
+    };
 
-        emailVerify1 = {
-            username: 'jane',
-            token: 'jane_token',
-        };
+    emailVerify1 = {
+        username: 'jane',
+        token: 'jane_token',
+    };
 
-        token1 = {
-            account_username: 'bob',
-            token: 'bob_token',
-        };
+    token1 = {
+        account_username: 'bob',
+        token: 'bob_token',
+        created_at: new Date(),
+        // its always 30 minutes from now, as reflected in cookie session
+        expires_at: new Date(Date.now() + 30 * 60 * 1000),
 
-        // Insert data into collections
-        const db = client.db('space_db');
-        await db.collection('Admin').insertMany([admin1, admin2]);
-        await db.collection('EmailVerify').insertMany([emailVerify1]);
-        await db.collection('User').insertMany([member1, member2]);
-        await db.collection('Token').insertMany([token1]);
+    };
 
-        console.log('Data inserted successfully.');
-    } catch (error) {} finally {
-        await client.close();
-    }
+    bob_leaderboard = {
+        username: 'bob',
+        score: 0,
+    };
+
+    // Insert data into collections
+    const db = client.db('space_db');
+    await db.collection('Admin').insertMany([admin1, admin2]);
+    await db.collection('EmailVerify').insertMany([emailVerify1]);
+    await db.collection('User').insertMany([member1, member2]);
+    //await db.collection('Token').insertMany([token1]);
+    await db.collection('Encounter').insertMany(require('./encounters'));
+    await db.collection('Scoreboard').insertMany([bob_leaderboard]);
+    await db.collection('CodeSnippet').insertMany(require('./codeSnippets'));
+    console.log('Data inserted successfully.');
+
 };
 
 // runDataInsertion().then();

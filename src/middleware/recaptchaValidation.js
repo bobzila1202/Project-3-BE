@@ -1,7 +1,4 @@
-const {RecaptchaEnterpriseServiceClient} = require('@google-cloud/recaptcha-enterprise');
-
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
-
 
 const verify = async (req, res, next) => {
     const recaptchaResponse = req.body['g-recaptcha-response'];

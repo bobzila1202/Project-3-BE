@@ -2,10 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-// TODO: placeholder for mapping html to routes
-const home = require("../controllers/home");
-router.get("/", home.index);
-router.post("/", home.create);
+router.get("/health", async (req, res) => {res.status(200).json({status: "ok"}).end()});
 
 // keep always last, handles all other unimplemented routes
 router.get("*", (req, res) => {
@@ -17,7 +14,5 @@ router.all("*", (req, res) => {
     // TODO: possibly custom json response
     res.status(404).json({error: "Not implemented yet."});
 });
-
-
 
 module.exports = router;

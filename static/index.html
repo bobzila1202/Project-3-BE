@@ -5,9 +5,55 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Include reCAPTCHA script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <title>Home</title>
 </head>
 <body>
-<p>Server works!</p>
+<!--reCAPTCHA v2-->
+<form id="login-form">
+
+    <div id="login-wrapper">
+        <input type="text" id="username" class="input-text login-el" name="username" placeholder="Username">
+        <input type="password" id="password" autocomplete="password" class="input-text login-el" name="password" placeholder="Password">
+
+        <!--reCAPTCHA v2-->
+        <div class="g-recaptcha" data-sitekey="6LfFmcsnAAAAAIxzLO5HlGhP8lONpoY9Z2r3Z2XU"></div>
+
+        <input id="login" type="submit" class="input-submit login-el" value="Login">
+    </div>
+    <script>
+        document.querySelector("#login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            const username = formData.get("username");
+            const password = formData.get("password");
+
+            let myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            let raw = JSON.stringify({
+                username,
+                password,
+                "g-recaptcha-response": grecaptcha.getResponse(),
+            });
+
+            let requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+
+            fetch("/users/login", requestOptions)
+                .then(response => response.text())
+                .then(result => console.log(result))
+                .catch(error => console.log('error', error));
+
+            grecaptcha.reset();
+        });
+    </script>
+</form>
 </body>
 </html>

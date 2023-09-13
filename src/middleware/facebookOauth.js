@@ -3,75 +3,23 @@ const router = express.Router();
 
 const passport = require('passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
-// const User = require('../models/User');
-// const Token = require('../models/Token');
+const User = require('../models/User');
+const Token = require('../models/Token');
 
 const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 
 passport.use(new FacebookStrategy({
-        clientID: FACEBOOK_APP_ID,
-        clientSecret: FACEBOOK_APP_SECRET,
-        // TODO: change callback to server deployment url
-        callbackURL: 'http://localhost:8080/auth/facebook/callback'
-    },
-    function (accessToken, refreshToken, profile, done) {
-        // Process user profile data here
-        // try {
-        //     // TODO: check if user exists
-        //     const foundUser = User.getByUsername(profile.id.split("_")[0]);
-        //     if (foundUser) {
-        //         // user exists, log them in
-        //         const token = Token.create(foundUser.username);
-        //
-        //         res
-        //             .cookie("authorization", token.token, {
-        //                 httpOnly: true,
-        //                 secure: true,
-        //                 sameSite: "strict",
-        //                 domain: "localhost",
-        //                 path: "/",
-        //                 priority: "high",
-        //                 maxAge: 30 * 60 * 1000, // 30 minutes maxAge as defined in database table
-        //             }).redirect(BASE_URL + "/");
-        //     }
-        // } catch (error) {
-        //     if (error === "Unable to locate user.") {
-        //         //check if email is visible
-        //         const email = profile.emails[0].value || "private_facebook_managed";
-        //         // set the unique id as the username
-        //         const username = profile.id + "_facebook";
-        //         const password = accessToken;
-        //
-        //         // create the user
-        //         const newUser = User.create({username, password, email});
-        //
-        //         // no need for activation link, so just log them in
-        //         const token = Token.create(newUser.username);
-        //
-        //         res
-        //             .cookie("authorization", token.token, {
-        //                 httpOnly: true,
-        //                 secure: true,
-        //                 sameSite: "strict",
-        //                 domain: "localhost",
-        //                 path: "/",
-        //                 priority: "high",
-        //                 maxAge: 30 * 60 * 1000, // 30 minutes maxAge as defined in database table
-        //             }).redirect(BASE_URL + "/");
-        //     }
-        //     // otherwise there was another error, redirect to login again
-        //     done(error);
-        // }
-    }));
+    clientID: FACEBOOK_APP_ID,
+    clientSecret: FACEBOOK_APP_SECRET,
+    callbackURL: 'http://localhost:8080/auth/facebook/callback'
+}, function (accessToken, refreshToken, profile, done) {
+    // no need for session support here
+    return done(null, profile);
+}));
 
-passport.serializeUser(function (user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function (obj, done) {
-    done(null, obj);
-});
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
 
 // Get user profile data from Google API
@@ -93,15 +41,28 @@ async function getUserProfile(accessToken) {
     }
 }
 
-// facebook oauth2
+// Define the route handler for initiating Facebook OAuth
 router.get('/auth/facebook', passport.authenticate('facebook', {scope: ['profile', 'email']}));
-router.get('/auth/facebook/callback', (req, res) => {
-    passport.authenticate('facebook', {failureRedirect: '/login'}),
-        function (req, res) {
-            console.log(req.user);
-        }
-});
 
+// Define the route handler for handling the callback from Facebook
+router.get('/auth/facebook/callback', (req, res) => {
+    passport.authenticate('facebook', {failureRedirect: '/login'}, (err, user) => {
+        if (err) {
+            // Handle error
+            return res.status(500).json({error: err.message});
+        }
+        if (!user) {
+            // Handle failed authentication
+            return res.redirect('/login'); // Redirect to the login page or another appropriate route
+        }
+
+        // Successful authentication; you can access the user profile here
+        console.log(user);
+
+        // Redirect to the desired page after successful authentication
+        return res.redirect('/');
+    })(req, res);
+});
 
 
 module.exports = router;
