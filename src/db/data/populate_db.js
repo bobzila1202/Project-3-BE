@@ -11,7 +11,7 @@ const runDataInsertion = async () => {
     let admin1, admin2, member1, member2, emailVerify1, token1, bob_leaderboard;
 
     await client.connect();
-    console.log('Connected to MongoDB');
+    //console.log('Connected to MongoDB');
 
     // Initialize data
     admin1 = {

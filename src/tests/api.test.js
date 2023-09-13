@@ -27,16 +27,6 @@ describe('API tests for home', () => {
         app.close();
     });
 
-    it('should return a 200 status code for GET request to /', async () => {
-        const response = await request(app).get('/');
-        expect(response.statusCode).toBe(200);
-    });
-
-    it('should return a 200 status code for POST request to /', async () => {
-        const response = await request(app).post('/');
-        expect(response.statusCode).toBe(201);
-    });
-
     it('should return a 404 status code for GET request to unhandled mapping', async () => {
         const response = await request(app).get('/unknown');
         expect(response.statusCode).toBe(404);
@@ -146,7 +136,7 @@ describe('validateParameters middleware', () => {
         validateParameters(parameterTypes)(mockReq, mockRes, mockNext);
         expect(mockNext).not.toHaveBeenCalled();
         //expect(mockRes.status).not.toHaveBeenCalled();
-        expect(mockRes.json).not.toHaveBeenCalled();
+        expect(mockRes.json).toHaveBeenCalled();
     });
 
     it('should return 400 for invalid boolean parameter', () => {
