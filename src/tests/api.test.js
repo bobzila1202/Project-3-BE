@@ -1,4 +1,4 @@
-require('dotenv').config({path: './test/.env.test'});
+require('dotenv').config();
 
 const request = require('supertest');
 const validateParameters = require('../middleware/validateParams');
@@ -14,7 +14,7 @@ const https = require('https');
 const fs = require('fs');
 
 
-describe('API tests', () => {
+describe('API tests for home', () => {
     let app;
 
     beforeAll(() => {
@@ -88,4 +88,23 @@ describe('API tests', () => {
 
     //     expect(response.status).toBe(404);
     // });
+});
+
+describe('API tests for user', () => {
+    let app;
+
+    beforeAll(() => {
+        app = server.listen(3000);
+    });
+
+    afterAll(() => {
+        jest.clearAllMocks();
+        app.close();
+    });
+    
+    it('should return a 200 status code for GET request to /', async () => {
+        const response = await request(app).get('/');
+        expect(response.statusCode).toBe(200);
+    });
+
 });
