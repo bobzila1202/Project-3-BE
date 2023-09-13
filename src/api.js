@@ -57,7 +57,7 @@ app.post("/python", async (req, res) => {
     fs.writeFileSync('test.py', input)
 
 
-    PythonShell.run('test.py', {mode: 'text', pythonOptions: ['-u'], args:['hello','olleh']}).then(
+    PythonShell.runString(input, {mode: 'text', pythonOptions: ['-u'], args:['hello','olleh']}).then(
         messages => {console.log('line 48 ' + messages);
         res.send(messages);
         }
