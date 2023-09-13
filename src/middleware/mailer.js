@@ -1,6 +1,5 @@
 const nodemailer = require('nodemailer');
 
-// TODO: use a real email service for deployment
 const transporter = nodemailer.createTransport({
     host: 'localhost', port: 1025, ignoreTLS: true,
 });
