@@ -4,26 +4,18 @@ const request = require('supertest');
 const validateParameters = require('../middleware/validateParams');
 const server = require('../api');
 
-const authenticator = require('../middleware/userBasicAuth');
-const Token = require('../models/Token');
-
 const filter = require('../middleware/htmlFilter');
-
-const express = require('express');
-const https = require('https');
-const fs = require('fs');
-
 
 describe('API tests for home', () => {
     let app;
 
     beforeAll(() => {
         app = server.listen(3000);
-
     });
 
     afterAll(() => {
         jest.clearAllMocks();
+        jest.resetModules();
         app.close();
     });
 
@@ -69,7 +61,7 @@ describe('API tests for user', () => {
         jest.clearAllMocks();
         app.close();
     });
-    
+
     // it('should return a 200 status code for GET request to /', async () => {
     //     const response = await request(app).get('/users');
     //     expect(response.statusCode).toBe(200);
@@ -83,7 +75,7 @@ describe('API tests for user', () => {
         }
 
         await request(app).post('/users/register').send(data).expect(201)
-        
+
     })
 
     it('should return an error message when sending incorrect password to POST /register', async () => {

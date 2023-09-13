@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@google-cloud/recaptcha-enterprise": "^4.0.1",
-    "@shelf/jest-mongodb": "^4.1.7",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.4",
     "@types/node": "^20.6.0",

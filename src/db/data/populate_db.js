@@ -1,5 +1,8 @@
 const bcrypt = require('bcrypt');
+
 const client = require('../');
+const codeSnippets = require('./codeSnippets');
+const encounters = require('./encounters');
 
 // Function to hash passwords
 const hashPassword = async (password) => {
@@ -71,10 +74,10 @@ const runDataInsertion = async () => {
     await db.collection('EmailVerify').insertMany([emailVerify1]);
     await db.collection('User').insertMany([member1, member2]);
     //await db.collection('Token').insertMany([token1]);
-    await db.collection('Encounter').insertMany(require('./encounters'));
+    await db.collection('Encounter').insertMany(encounters);
     await db.collection('Scoreboard').insertMany([bob_leaderboard]);
-    await db.collection('CodeSnippet').insertMany(require('./codeSnippets'));
-    console.log('Data inserted successfully.');
+    await db.collection('CodeSnippet').insertMany(codeSnippets);
+    //console.log('Data inserted successfully.');
 
 };
 

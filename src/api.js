@@ -32,6 +32,11 @@ app.use("/users", user);
 app.use("/", require("./middleware/googleOauth"));
 app.use("/", require("./middleware/facebookOauth"));
 
+// on SIGINT, close the server
+process.on("SIGINT", () => {
+    //console.log("Closing server");
+    process.exit(0);
+});
 
 // should always be last
 app.use("/", home);
@@ -58,7 +63,7 @@ if (ENV === "production") {
 } else {
     const populate_db = require("./db/data/populate_db");
     const dropCollections = require("./db/dropCollections");
-    
+
     dropCollections().then(() => populate_db().then());
     module.exports = app;
 }
