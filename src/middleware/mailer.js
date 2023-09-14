@@ -23,11 +23,5 @@ module.exports = async function sendActivationEmail(to, text, email, action) {
         html: emailTemplate,
     };
 
-    await transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            //console.error('Error sending email:', error);
-        } else {
-            //console.log('Email sent:', info.response);
-        }
-    });
+    await transporter.sendMail(mailOptions);
 }

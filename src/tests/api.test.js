@@ -7,9 +7,12 @@ const server = require('../api');
 const authenticator = require('../middleware/userBasicAuth');
 const Token = require('../models/Token');
 const User = require('../models/User')
+const Encounter = require('../models/Encounter')
+const userController = require('../controllers/user')
 const EmailToken = require('../models/EmailToken')
 const {MongoClient} = require("mongodb")
 const db = require('../db')
+
 
 const filter = require('../middleware/htmlFilter');
 const { send } = require('process');
@@ -70,10 +73,7 @@ describe('API tests for user', () => {
         app.close();
     });
 
-    // it('should return a 200 status code for GET request to /', async () => {
-    //     const response = await request(app).get('/users');
-    //     expect(response.statusCode).toBe(200);
-    // });
+   
 
     it('should return a 200 status code for POST request to /register', async () => {
         const data = {
@@ -110,6 +110,17 @@ describe('API tests for user', () => {
         const response = await request(app).post('/users/login').send(sendData)
         expect(response.statusCode).toBe(200)
     })
+
+    // it('should return status code 400 on unsuccessful login', async () => {
+    //     const data = await db.db('space_db').collection('User').findOne({username:"jane"})
+    //     console.log(data)
+    //     const sendData = {
+    //         username: data.username,
+    //         password: "Robust1997!"
+    //     }
+    //     const response = await request(app).post('/users/login').send(sendData)
+    //     expect(response.statusCode).toBe(400)
+    // })
 
     it('should return status code 401 with non-existing username', async () => {
         const sendData = {
@@ -281,146 +292,6 @@ describe('Server URL Construction', () => {
     });
 });
 
-// const User = require('../models/User');
-// const EmailToken = require('../models/EmailToken');
-// //const Suggestion = require('../models/Suggestion');
-
-// jest.mock('../models/Token'); // Mock the Token class
-// jest.mock('../models/User'); // Mock the User class
-
-// describe('authenticator middleware', () => {
-//     let next;
-//     let req;
-//     let res;
-
-//     beforeEach(() => {
-//         next = jest.fn();
-//         req = {
-//             headers: {
-//                 cookie: 'token=validTokenHere',
-//             },
-//         };
-//         res = {
-//             redirect: jest.fn(), // Mock the redirect method
-//             locals: {},
-//         };
-//     });
-
-//     afterEach(() => {
-//         jest.clearAllMocks();
-//     });
-
-//     it('should pass with a valid token', async () => {
-//         const validTokenMock = {
-//             account_username: 'testUser',
-//             isExpired: jest.fn().mockResolvedValue(false),
-//         };
-
-//         const userMock = {
-//             isActivated: jest.fn().mockResolvedValue(true),
-//         };
-
-//         Token.getByToken.mockResolvedValue(validTokenMock);
-//         User.getByUsername.mockResolvedValue(userMock);
-
-//         await authenticator(req, res, next);
-
-//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
-//         expect(validTokenMock.isExpired).toHaveBeenCalled();
-//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
-//         expect(userMock.isActivated).toHaveBeenCalled();
-//         expect(res.locals.token).toBe('validTokenHere');
-//         expect(res.locals.user).toBe('testUser');
-//         expect(next).toHaveBeenCalled();
-//         expect(res.redirect).not.toHaveBeenCalled();
-//     });
-
-//     it('should redirect to "/" if token is empty', async () => {
-//         req.headers.cookie = 'token=';
-
-//         await authenticator(req, res, next);
-
-//         expect(Token.getByToken).not.toHaveBeenCalled();
-//         expect(res.redirect).toHaveBeenCalledWith('/');
-//         expect(next).not.toHaveBeenCalled();
-//     });
-
-//     it('should redirect to "/" if an error occurs in token retrieval', async () => {
-//         Token.getByToken.mockRejectedValue(new Error('Mocked token error'));
-
-//         await authenticator(req, res, next);
-
-//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
-//         expect(res.redirect).toHaveBeenCalledWith('/');
-//         expect(next).not.toHaveBeenCalled();
-//     });
-
-//     it('should redirect to "/" if an error occurs in user retrieval', async () => {
-//         // Mock valid token, but throw an error when retrieving the user
-//         const validTokenMock = {
-//             account_username: 'testUser',
-//             isExpired: jest.fn().mockResolvedValue(false),
-//         };
-
-//         Token.getByToken.mockResolvedValue(validTokenMock);
-//         User.getByUsername.mockRejectedValue(new Error('Mocked user error'));
-
-//         await authenticator(req, res, next);
-
-//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
-//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
-//         expect(res.redirect).toHaveBeenCalledWith('/');
-//         expect(next).not.toHaveBeenCalled();
-//     });
-
-//     it('should redirect to "/" if user is not activated', async () => {
-//         const validTokenMock = {
-//             account_username: 'testUser',
-//             isExpired: jest.fn().mockResolvedValue(false),
-//         };
-
-//         const userMock = {
-//             isActivated: jest.fn().mockResolvedValue(false), // User is not activated
-//         };
-
-//         Token.getByToken.mockResolvedValue(validTokenMock);
-//         User.getByUsername.mockResolvedValue(userMock);
-
-//         await authenticator(req, res, next);
-
-//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
-//         expect(validTokenMock.isExpired).not.toHaveBeenCalled();
-//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
-//         expect(userMock.isActivated).toHaveBeenCalled();
-//         expect(res.redirect).toHaveBeenCalledWith('/');
-//         expect(next).not.toHaveBeenCalled();
-//     });
-
-//     it('should redirect to "/" if token is expired', async () => {
-//         const validTokenMock = {
-//             account_username: 'testUser',
-//             isExpired: jest.fn().mockResolvedValue(true), // Token is expired
-//         };
-
-//         const mocked = {
-//             isActivated: jest.fn().mockResolvedValue(true), // User is activated
-//         };
-
-//         Token.getByToken.mockResolvedValue(validTokenMock);
-//         User.getByUsername.mockResolvedValue(mocked);
-
-//         await authenticator(req, res, next);
-
-//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
-//         expect(validTokenMock.isExpired).toHaveBeenCalled();
-//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
-//         expect(mocked.isActivated).toHaveBeenCalled();
-//         expect(res.redirect).toHaveBeenCalledWith('/');
-//         expect(next).not.toHaveBeenCalled();
-//     });
-// });
-
-
 
 describe('User', () => {
     const sampleUserData = {
@@ -534,13 +405,8 @@ describe('User', () => {
             expect(result.acknowledged).toEqual(true);
         });
 
-
-        // Add more tests for other instance methods
     });
 });
-
-
-// Mock the MongoDB collection methods
 
 
 describe('Token', () => {
@@ -604,6 +470,21 @@ describe('Token', () => {
             expect(tokenData.token).toEqual(mockTokenData.token);
         });
 
+        it('should throw error if getting no token', async () => {
+            const mockTokenData = {
+                account_username: 'toestuser',
+            };
+
+            const t = async () => {
+                return await Token.getByToken(mockTokenData.account_username);
+              };
+              try {
+                await t();
+            } catch (error) {
+                expect(error.message).toBe("Token not found");
+            }
+        });
+
         it('should delete a token', async () => {
             const accountUsername = 'testuser';
             const token = await Token.create(accountUsername)
@@ -625,7 +506,6 @@ describe('Token', () => {
             
         });
 
-        // Add more tests for other static methods
     });
 
     describe('Instance Methods', () => {
@@ -658,7 +538,6 @@ describe('Token', () => {
             };
 
             
-
             const token = await Token.create(mockTokenData.account_username)
 
             await Token.addSessionEncounter(mockTokenData.account_username, mockTokenData.session_encounters);
@@ -667,41 +546,187 @@ describe('Token', () => {
         });
 
         it('should add a session code snippet', async () => {
-            const mockTokenData = {
+             const mockTokenData = {
                 account_username: 'testuser',
-                session_code_snippets: [],
+                session_code_snippets: 'oh no a monkey',
             };
 
-            mockCollection.updateOne.mockResolvedValue({});
+            
+            const token = await Token.create(mockTokenData.account_username)
 
-            const token = new Token(mockTokenData);
+            await Token.addSessionCodeSnippet(mockTokenData.account_username, mockTokenData.session_code_snippets);
 
-            await token.addSessionCodeSnippet('new-snippet');
-
-            expect(mockCollection.updateOne).toHaveBeenCalledWith(
-                { account_username: 'testuser' },
-                { $push: { session_code_snippets: 'new-snippet' } }
-            );
+           expect(await Token.getSessionCodeSnippets(mockTokenData.account_username)).toEqual(['oh no a monkey'])
         });
 
         it('should get session code snippets', async () => {
             const mockTokenData = {
                 account_username: 'testuser',
-                session_code_snippets: ['snippet1', 'snippet2'],
+                session_code_snippets: ['oh no a monkey'],
             };
 
-            mockCollection.findOne.mockResolvedValue(mockTokenData);
 
-            const token = new Token(mockTokenData);
+            const token = await Token.create(mockTokenData.account_username)
 
-            const sessionCodeSnippets = await token.getSessionCodeSnippets();
+            const codeSnippets = await Token.getSessionCodeSnippets(mockTokenData.account_username);
 
-            expect(sessionCodeSnippets).toEqual(mockTokenData.session_code_snippets);
+            expect(codeSnippets).toEqual(mockTokenData.session_code_snippets);
         });
 
-        // Add more tests for other instance methods
+        it('should throw error if no token', async () => {
+            const mockTokenData = {
+                account_username: 'toestuser',
+                session_code_snippets: ['oh no a monkey'],
+            };
+
+            const t = async () => {
+                return await Token.getSessionCodeSnippets(mockTokenData.account_username);
+              };
+              try {
+                await t();
+            } catch (error) {
+                expect(error.message).toBe("Token not found");
+            }
+        });
     });
 });
+
+
+const Scoreboard = require('../models/Scoreboard'); // Adjust the import path as needed
+
+describe('Scoreboard', () => {
+    const mockDb = {
+        collection: jest.fn(() => mockCollection),
+    };
+    const mockCollection = {
+        find: jest.fn(),
+        toArray: jest.fn(),
+        insertOne: jest.fn(),
+        updateOne: jest.fn(),
+        findOne: jest.fn(),
+    };
+
+    jest.mock('../db', () => ({
+        db: jest.fn(() => mockDb),
+    }));
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    describe('Static Methods', () => {
+        it('should get all scores', async () => {
+            await db.db('space_db').collection('Scoreboard').insertOne({ username: 'bob', score: 0 })
+            const mockScores = [
+                {
+                    "username": "bob",
+                    "score": 0
+                }
+            ];
+
+            const scores = await Scoreboard.getAll();
+            
+            const data = mockScores.map((score) => new Scoreboard(score))
+            expect(data[0]).toEqual(scores[0])
+            
+        });
+
+        it('should initialize an empty score for a username', async () => {
+            const username = 'newUser';
+
+            await Scoreboard.initEmpty(username);
+            const scores = await Scoreboard.getAll()
+            expect((await db.db('space_db').collection('Scoreboard').findOne({ username: username }, { projection: { _id: 0, username: 1, score: 1 } }))).toEqual({ username: username, score: 0 })
+        
+            
+        });
+
+        it('should increment the score for a username', async () => {
+            const username = 'bob';
+
+            await Scoreboard.incrementScore(username);
+            expect((await db.db('space_db').collection('Scoreboard').findOne({ username: username }, { projection: { _id: 0, username: 1, score: 1 } }))).toEqual({ username: username, score: 1 })
+           
+        });
+
+        it('should get a user by username', async () => {
+            const username = 'bob';
+            const mockUser = { username, score: 0};
+
+            
+
+            const user = await Scoreboard.getByUsername(username);
+
+
+         
+            expect(user.username).toEqual(mockUser.username);
+        });
+    });
+
+
+    
+});
+
+describe('Encounter', () => {
+    beforeEach(async () => {
+      const encounters_db = db.db('space_db').collection('Encounter');
+      await encounters_db.deleteMany({});
+    });
+  
+    it('should get a random encounter', async () => {
+      
+      const testEncounters = [
+        {
+          type: 'combat',
+          text: 'Test combat encounter 1',
+          enemyStats: { health: 100, damage: 20 },
+          enemyType: 'Orc',
+        },
+        {
+          type: 'traversal',
+          text: 'Test traversal encounter 2',
+        },
+        {
+          type: 'combat',
+          text: 'Test combat encounter 3',
+          enemyStats: { health: 80, damage: 15 },
+          enemyType: 'Dragon',
+        },
+      ];
+  
+      const encounters_db = db.db('space_db').collection('Encounter');
+      await encounters_db.insertMany(testEncounters);
+  
+   
+      const sessionObtained = [];
+      const randomEncounter = await Encounter.getRandom(sessionObtained);
+  
+      
+      expect(randomEncounter).toBeInstanceOf(Encounter);
+      expect(randomEncounter.type).toBeDefined();
+      expect(randomEncounter.text).toBeDefined();
+      expect(randomEncounter._id).toBeDefined();
+  
+      
+      expect(sessionObtained.includes(randomEncounter._id)).toBe(false);
+    });
+  
+    it('should throw an error when no encounters are available', async () => {
+      const sessionObtained = [];
+  
+      try {
+        await Encounter.getRandom(sessionObtained);
+       
+        expect(true).toBe(false);
+      } catch (error) {
+      
+        expect(error.message).toBe('No encounters available!');
+      }
+    });
+  });
+
+
+
 
 
 

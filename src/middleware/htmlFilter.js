@@ -1,4 +1,5 @@
 // Disallows direct access to HTML files, unless mapped to a route.
+
 module.exports = (req, res, next) => {
     const forbiddenExtensions = [".html", ".htm"]; // Add more extensions if needed
 
