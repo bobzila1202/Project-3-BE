@@ -46,10 +46,6 @@ async function login(req, res) {
 
         const user = await User.getByUsername(data.username);
 
-        if (!user) {
-            return res.status(401).json({error: "User not found"});
-        }
-
         if (!await user.isActivated()) {
             return res.status(403).json({error: "User not activated"});
         }
@@ -74,7 +70,7 @@ async function login(req, res) {
                 .json({authorized: true});
         }
     } catch (error) {
-        res.status(403).json({error: "Unauthorized"});
+        res.status(401).json({error: "Unauthorized"});
     }
 }
 

@@ -4,7 +4,15 @@ const request = require('supertest');
 const validateParameters = require('../middleware/validateParams');
 const server = require('../api');
 
+const authenticator = require('../middleware/userBasicAuth');
+const Token = require('../models/Token');
+const User = require('../models/User')
+const EmailToken = require('../models/EmailToken')
+const {MongoClient} = require("mongodb")
+const db = require('../db')
+
 const filter = require('../middleware/htmlFilter');
+const { send } = require('process');
 
 describe('API tests for home', () => {
     let app;
@@ -88,6 +96,38 @@ describe('API tests for user', () => {
         const response = await request(app).post('/users/register').send(data)
         expect(response._body.error).toBe("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number and one special character")
     })
+
+
+    it('should return status code 200 on successful login', async () => {
+        await db.connect()
+        const user = await User.getByUsername("Bobzila")
+        await user.activate()
+        const data = await db.db('space_db').collection('User').findOne({username:"Bobzila"})
+        const sendData = {
+            username: data.username,
+            password: "Robust1997!"
+        }
+        const response = await request(app).post('/users/login').send(sendData)
+        expect(response.statusCode).toBe(200)
+    })
+
+    it('should return status code 401 with non-existing username', async () => {
+        const sendData = {
+            username: "bobo",
+            password: "Robust1997!"
+        }
+        const response = await request(app).post('/users/login').send(sendData)
+        expect(response.statusCode).toBe(401)
+    })
+
+    // it('It should clear the token when logging out', async () => {
+
+
+    //     const token = Token.getByToken(res.locals.token)
+    //     await request(app).post('users/logout')
+
+
+    // })
 
 });
 
@@ -240,4 +280,428 @@ describe('Server URL Construction', () => {
         expect(serverUrl.protocol).toBe("https:");
     });
 });
+
+// const User = require('../models/User');
+// const EmailToken = require('../models/EmailToken');
+// //const Suggestion = require('../models/Suggestion');
+
+// jest.mock('../models/Token'); // Mock the Token class
+// jest.mock('../models/User'); // Mock the User class
+
+// describe('authenticator middleware', () => {
+//     let next;
+//     let req;
+//     let res;
+
+//     beforeEach(() => {
+//         next = jest.fn();
+//         req = {
+//             headers: {
+//                 cookie: 'token=validTokenHere',
+//             },
+//         };
+//         res = {
+//             redirect: jest.fn(), // Mock the redirect method
+//             locals: {},
+//         };
+//     });
+
+//     afterEach(() => {
+//         jest.clearAllMocks();
+//     });
+
+//     it('should pass with a valid token', async () => {
+//         const validTokenMock = {
+//             account_username: 'testUser',
+//             isExpired: jest.fn().mockResolvedValue(false),
+//         };
+
+//         const userMock = {
+//             isActivated: jest.fn().mockResolvedValue(true),
+//         };
+
+//         Token.getByToken.mockResolvedValue(validTokenMock);
+//         User.getByUsername.mockResolvedValue(userMock);
+
+//         await authenticator(req, res, next);
+
+//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
+//         expect(validTokenMock.isExpired).toHaveBeenCalled();
+//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
+//         expect(userMock.isActivated).toHaveBeenCalled();
+//         expect(res.locals.token).toBe('validTokenHere');
+//         expect(res.locals.user).toBe('testUser');
+//         expect(next).toHaveBeenCalled();
+//         expect(res.redirect).not.toHaveBeenCalled();
+//     });
+
+//     it('should redirect to "/" if token is empty', async () => {
+//         req.headers.cookie = 'token=';
+
+//         await authenticator(req, res, next);
+
+//         expect(Token.getByToken).not.toHaveBeenCalled();
+//         expect(res.redirect).toHaveBeenCalledWith('/');
+//         expect(next).not.toHaveBeenCalled();
+//     });
+
+//     it('should redirect to "/" if an error occurs in token retrieval', async () => {
+//         Token.getByToken.mockRejectedValue(new Error('Mocked token error'));
+
+//         await authenticator(req, res, next);
+
+//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
+//         expect(res.redirect).toHaveBeenCalledWith('/');
+//         expect(next).not.toHaveBeenCalled();
+//     });
+
+//     it('should redirect to "/" if an error occurs in user retrieval', async () => {
+//         // Mock valid token, but throw an error when retrieving the user
+//         const validTokenMock = {
+//             account_username: 'testUser',
+//             isExpired: jest.fn().mockResolvedValue(false),
+//         };
+
+//         Token.getByToken.mockResolvedValue(validTokenMock);
+//         User.getByUsername.mockRejectedValue(new Error('Mocked user error'));
+
+//         await authenticator(req, res, next);
+
+//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
+//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
+//         expect(res.redirect).toHaveBeenCalledWith('/');
+//         expect(next).not.toHaveBeenCalled();
+//     });
+
+//     it('should redirect to "/" if user is not activated', async () => {
+//         const validTokenMock = {
+//             account_username: 'testUser',
+//             isExpired: jest.fn().mockResolvedValue(false),
+//         };
+
+//         const userMock = {
+//             isActivated: jest.fn().mockResolvedValue(false), // User is not activated
+//         };
+
+//         Token.getByToken.mockResolvedValue(validTokenMock);
+//         User.getByUsername.mockResolvedValue(userMock);
+
+//         await authenticator(req, res, next);
+
+//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
+//         expect(validTokenMock.isExpired).not.toHaveBeenCalled();
+//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
+//         expect(userMock.isActivated).toHaveBeenCalled();
+//         expect(res.redirect).toHaveBeenCalledWith('/');
+//         expect(next).not.toHaveBeenCalled();
+//     });
+
+//     it('should redirect to "/" if token is expired', async () => {
+//         const validTokenMock = {
+//             account_username: 'testUser',
+//             isExpired: jest.fn().mockResolvedValue(true), // Token is expired
+//         };
+
+//         const mocked = {
+//             isActivated: jest.fn().mockResolvedValue(true), // User is activated
+//         };
+
+//         Token.getByToken.mockResolvedValue(validTokenMock);
+//         User.getByUsername.mockResolvedValue(mocked);
+
+//         await authenticator(req, res, next);
+
+//         expect(Token.getByToken).toHaveBeenCalledWith('validTokenHere');
+//         expect(validTokenMock.isExpired).toHaveBeenCalled();
+//         expect(User.getByUsername).toHaveBeenCalledWith('testUser');
+//         expect(mocked.isActivated).toHaveBeenCalled();
+//         expect(res.redirect).toHaveBeenCalledWith('/');
+//         expect(next).not.toHaveBeenCalled();
+//     });
+// });
+
+
+
+describe('User', () => {
+    const sampleUserData = {
+        username: 'testuser',
+        password: 'password',
+        email: 'test@example.com',
+        first_name: 'John',
+        last_name: 'Doe',
+        phone_number: '1234567890',
+        postal_code: '12345',
+    };
+    let user;
+
+    const mockDb = {
+        collection: jest.fn(() => mockCollection),
+    };
+    const mockCollection = {
+        find: jest.fn(() => mockCollection),
+        findOne: jest.fn(() => mockCollection),
+        insertOne: jest.fn(() => mockCollection),
+        updateOne: jest.fn(() => mockCollection),
+    };
+    jest.mock('../db', () => ({
+        db: jest.fn(() => mockDb),
+    }));
+
+    beforeEach(() => {
+        user = new User(sampleUserData);
+    });
+
+    describe('Static Methods', () => {
+
+        it('should retrieve all users with username and email only', async () => {
+         
+
+            const users = await User.getAll();
+
+            expect(users).toBeDefined();
+            expect(Array.isArray(users)).toBe(true);
+            
+        });
+
+        it('should create a new user', async () => {
+            mockCollection.insertOne.mockResolvedValue({ ops: [sampleUserData] });
+
+            const createdUser = await User.create(sampleUserData);
+            expect(createdUser).toBeDefined();
+            expect(createdUser.username).toEqual(sampleUserData.username);
+        });
+
+        it('should get a user by username', async () => {
+            mockCollection.findOne.mockResolvedValue(sampleUserData);
+
+            const foundUser = await User.getByUsername(sampleUserData.username);
+            expect(foundUser).toBeDefined();
+            expect(foundUser.username).toEqual(sampleUserData.username);
+        });
+
+        it('should get a user by email', async () => {
+            mockCollection.findOne.mockResolvedValue(sampleUserData);
+
+            const foundUser = await User.getByEmail(sampleUserData.email);
+            expect(foundUser).toBeDefined();
+            expect(foundUser.email).toEqual(sampleUserData.email);
+        });
+
+        // Add more tests for other static methods
+    });
+
+    describe('Instance Methods', () => {
+
+        it('should activate a user', async () => {
+            mockCollection.updateOne.mockResolvedValue({});
+            await db.connect()
+            const user = await User.getByUsername("testuser")
+
+            const result = await user.activate();
+            expect(result).toEqual({
+            "acknowledged": true,
+             "matchedCount": 1,
+             "modifiedCount": 1,
+            "upsertedCount": 0,
+            "upsertedId": null});
+        });
+
+        it('should check if a user is activated', async () => {
+            mockCollection.findOne.mockResolvedValue({ is_activated: true });
+            
+           
+            const activated = await user.isActivated();
+            expect(activated).toBe(true);
+        });
+
+        it('should update basic user details', async () => {
+            mockCollection.updateOne.mockResolvedValue({});
+
+            const user = new User(sampleUserData);
+
+            const result = await user.updateBasicDetails();
+
+            expect(result.acknowledged).toEqual(true);
+        });
+
+        it('should update the user password', async () => {
+            mockCollection.updateOne.mockResolvedValue({});
+
+            const user = new User(sampleUserData);
+
+            const result = await user.updatePassword();
+
+            expect(result.acknowledged).toEqual(true);
+        });
+
+
+        // Add more tests for other instance methods
+    });
+});
+
+
+// Mock the MongoDB collection methods
+
+
+describe('Token', () => {
+    
+   
+    const mockDb = {
+        collection: jest.fn(() => mockCollection),
+    };
+    const mockCollection = {
+        insertOne: jest.fn(() => mockCollection),
+        findOne: jest.fn(() => mockCollection),
+        deleteOne: jest.fn(() => mockCollection),
+        deleteMany: jest.fn(() => mockCollection),
+        updateOne: jest.fn(() => mockCollection),
+    };
+    jest.mock('../db', () => ({
+        db: jest.fn(() => mockDb),
+    }));
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    describe('Static Methods', () => {
+        it('should create a new token', async () => {
+            const accountUsername = 'testuser';
+            mockCollection.insertOne.mockResolvedValue({});
+            const token = await Token.create(accountUsername);
+            expect(token).toEqual({
+                account_username: accountUsername,
+                token: expect.any(String), // Use the generated mock UUID
+                created_at: expect.any(Date),
+                expires_at: expect.any(Date)
+            });
+
+            // expect(mockCollection.insertOne).toHaveBeenCalledWith({
+            //     account_username: accountUsername,
+            //     token: expect.any(String),
+            //     created_at: expect.any(Date),
+            //     expires_at: expect.any(Date),
+            //     session_encounters: [],
+            //     session_code_snippets: []
+            // });
+        });
+
+        it('should get a token by token', async () => {
+            const accountUsername = 'testuser';
+            mockCollection.insertOne.mockResolvedValue({});
+            const token = await Token.create(accountUsername)
+
+            const mockTokenData = {
+                token_id: undefined,
+                account_username: 'testuser',
+                token: token.token,
+                expires_at: expect.any(Date),
+                created_at: expect.any(Date),
+            };
+
+            mockCollection.findOne.mockResolvedValue(mockTokenData);
+
+            const tokenData = await Token.getByToken(mockTokenData.token);
+            expect(tokenData.token).toEqual(mockTokenData.token);
+        });
+
+        it('should delete a token', async () => {
+            const accountUsername = 'testuser';
+            const token = await Token.create(accountUsername)
+        
+            await Token.delete(token.token);
+            const data = await db.db('space_db').collection('Token').findOne({token: token.token})
+            expect(data).toBe(null)
+            
+        });
+
+        it('should delete all tokens by username', async () => {
+            const accountUsername = 'testuser';
+            await Token.create(accountUsername)
+            await Token.deleteAllByUsername(accountUsername);
+
+            const data = await db.db('space_db').collection('Token').findOne({account_username: accountUsername})
+            expect(data).toBe(null)
+
+            
+        });
+
+        // Add more tests for other static methods
+    });
+
+    describe('Instance Methods', () => {
+        it('should check if a token is expired', async () => {
+            const mockTokenData = await Token.create('bob')
+    
+            const isExpired = await mockTokenData.isExpired();
+
+            expect(isExpired).toBe(false);
+        });
+
+        it('should get session encounters', async () => {
+            const mockTokenData = {
+                account_username: 'testuser',
+                session_encounters: [],
+            };
+
+
+            const token = await Token.create(mockTokenData.account_username)
+
+            const sessionEncounters = await Token.getSessionEncounters(mockTokenData.account_username);
+
+            expect(sessionEncounters).toEqual(mockTokenData.session_encounters);
+        });
+
+        it('should add a session encounter', async () => {
+            const mockTokenData = {
+                account_username: 'testuser',
+                session_encounters: 'oh no a monkey',
+            };
+
+            
+
+            const token = await Token.create(mockTokenData.account_username)
+
+            await Token.addSessionEncounter(mockTokenData.account_username, mockTokenData.session_encounters);
+
+           expect(await Token.getSessionEncounters(mockTokenData.account_username)).toEqual(['oh no a monkey'])
+        });
+
+        it('should add a session code snippet', async () => {
+            const mockTokenData = {
+                account_username: 'testuser',
+                session_code_snippets: [],
+            };
+
+            mockCollection.updateOne.mockResolvedValue({});
+
+            const token = new Token(mockTokenData);
+
+            await token.addSessionCodeSnippet('new-snippet');
+
+            expect(mockCollection.updateOne).toHaveBeenCalledWith(
+                { account_username: 'testuser' },
+                { $push: { session_code_snippets: 'new-snippet' } }
+            );
+        });
+
+        it('should get session code snippets', async () => {
+            const mockTokenData = {
+                account_username: 'testuser',
+                session_code_snippets: ['snippet1', 'snippet2'],
+            };
+
+            mockCollection.findOne.mockResolvedValue(mockTokenData);
+
+            const token = new Token(mockTokenData);
+
+            const sessionCodeSnippets = await token.getSessionCodeSnippets();
+
+            expect(sessionCodeSnippets).toEqual(mockTokenData.session_code_snippets);
+        });
+
+        // Add more tests for other instance methods
+    });
+});
+
+
 

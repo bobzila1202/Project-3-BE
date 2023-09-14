@@ -29,8 +29,8 @@ app.use(filter);
 app.use("/users", user);
 // app.use("/admins", admins);
 
-app.use("/", require("./middleware/googleOauth"));
-app.use("/", require("./middleware/facebookOauth"));
+// app.use("/", require("./middleware/googleOauth"));
+// app.use("/", require("./middleware/facebookOauth"));
 
 // on SIGINT, close the server
 process.on("SIGINT", () => {

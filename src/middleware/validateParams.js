@@ -6,7 +6,7 @@ const validateParameters = (parameterTypes) => {
     return (req, res, next) => {
         const bodyParameters = req.body;
 
-        try {
+        
             for (const paramName in parameterTypes) {
                 if (bodyParameters.hasOwnProperty(paramName)) {
                     const paramValue = bodyParameters[paramName];
@@ -22,16 +22,12 @@ const validateParameters = (parameterTypes) => {
                         return res.status(400).json({error: `${paramName} should be a valid positive integer.`});
                     } else if (paramConfig.type === 'stringWithMaxLength' && paramValue.length > paramConfig.maxLength) {
                         return res.status(400).json({error: `${paramName} should have a maximum length of ${paramConfig.maxLength} characters.`});
-                    } else if (paramConfig.type === 'image' && !paramValue.startsWith('data:image/')) {
-                        return res.status(400).json({error: `${paramName} should be a valid base64 image.`});
-                    }
+                    } 
                 } else {
                     return res.status(400).json({error: `${paramName} is required.`});
-                }
-            }
-        } catch (e) {
-            return res.status(400).json({error: 'Invalid JSON format.'});
-        }
+                
+            }}
+       
 
         next();
     };
