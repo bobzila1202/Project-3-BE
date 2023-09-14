@@ -68,7 +68,8 @@ async function login(req, res) {
                     sameSite: "lax",
                     path: "/",
                     priority: "high",
-                    maxAge: 30 * 60 * 1000, // 30 minutes maxAge as defined in database table
+                    // ignore for now
+                    // maxAge: 30 * 60 * 1000, // 30 minutes maxAge as defined in database table
                 })
                 .status(200)
                 .json({authorized: true});

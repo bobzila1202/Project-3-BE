@@ -44,18 +44,23 @@ app.use("/", home);
 /* istanbul ignore next */
 if (ENV === "production") {
     // Schedule the token delete task to run every 1 minute
-    const client = require("./db");
-    // delete expired tokens in token collection
-    client.connect()
-        .then(db => {
-            // delete every 30 minutes
-            cron.schedule('*/30 * * * *', () => {
-                db.collection('Token').deleteMany({expires_at: {$lte: new Date()}});
-            });
+    // const client = require("./db");
+    // // delete expired tokens in token collection
+    // client.connect()
+    //     .then(db => {
+    //         // delete every 30 minutes
+    //         cron.schedule('*/30 * * * *', () => {
+    //             db.collection('Token').deleteMany({expires_at: {$lte: new Date()}});
+    //         });
+    //
+    //     })
+    //     .catch(err => console.log(err.message));
 
-        })
-        .catch(err => console.log(err.message));
 
+    const populate_db = require("./db/data/populate_db");
+    const dropCollections = require("./db/dropCollections");
+
+    dropCollections().then(() => populate_db().then());
 
     // apply various security patches
     const hardenedSecurityConfig = require("./middleware/hardenedServer");
