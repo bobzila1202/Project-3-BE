@@ -6,10 +6,7 @@ describe('insert', () => {
     let db;
 
     beforeAll(async () => {
-        connection = await MongoClient.connect(globalThis.process.env.DB_URL, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        });
+        connection = await MongoClient.connect(globalThis.process.env.DB_URL);
         db = await connection.db(globalThis.space_dungeons);
       });
 
