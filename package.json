@@ -7,7 +7,7 @@
     "test": "jest --clearCache && jest --coverage",
     "dev": "nodemon index.js",
     "jumpstart": "docker run -d -p 27017:27017 --name space_dungeons -e MONGO_INITDB_DATABASE=space_db mongo && docker run -d --name mail -p 1080:1080 -p 1025:1025 maildev/maildev",
-    "mongosh": "echo $(docker exec -it space_dungeons bash -c 'mongosh space_db') > /dev/null",
+    "mongosh": "docker exec -it space_dungeons bash -c 'mongosh space_db'",
     "clean": "docker stop space_dungeons && docker rm space_dungeons && docker stop mail && docker rm mail"
   },
   "keywords": [],
