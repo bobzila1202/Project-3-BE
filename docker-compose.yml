@@ -31,7 +31,7 @@ services:
       - "443:443"
     environment:
       PORT: 443
-      DB_URL: "mongodb://172.20.1.4:27017/space_dungeons"
+      DB_URL: mongodb://172.20.1.4:27017/space_dungeons
       ENV: production
       BCRYPT_SALT_ROUNDS: 12
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
