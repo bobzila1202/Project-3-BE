@@ -54,7 +54,6 @@ const test = `if __name__ == "__main__":
 app.post("/python", async (req, res) => {
     const input = 'import sys; \n' + req.body.code + '\n' + test 
     console.log(input);
-    fs.writeFileSync('test.py', input)
 
 
     PythonShell.runString(input, {mode: 'text', pythonOptions: ['-u'], args:['hello','olleh']}).then(
@@ -63,6 +62,7 @@ app.post("/python", async (req, res) => {
         }
     )
 
+    
 
 })
 
